@@ -3,15 +3,72 @@
   <head>
     <meta charset="utf-8" />
     <title>Movie database demo</title>
-    <script src="vendor/angular-1.3.5/angular.js"></script>
-    <script src="lib/lovefield.js"></script>
-    <script src="lib/movie_db_gen.js"></script>
-  </head>
-  <body>
-    <h1>Lovefield</h1>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="https://code.angularjs.org/1.3.5/angular.js"></script>
+    <script src="/dist/lovefield.js"></script>
+    <script src="/demos/moviedb/lib/movie_db_gen.js"></script>
     <script src="demo-angular.js"></script>
+  </head>
+  <body ng-controller="MoviedbController as moviedb">
+    <h1>Lovefield</h1>
+    
     <p>Load time: <span id="load_time"></span></p>
     <div id="master"></div>
     <div id="slave"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>id</th>
+          <th>title</th>
+          <th>year</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="movie in moviedb.movies | limitTo: 10"
+            ng-click="moviedb.selectMovie(movie)">
+          <td>{{movie.id}}</td>
+          <td>{{movie.title}}</td>
+          <td>{{movie.year}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <br><br>
+
+    <table>
+      <tr>
+        <th>Title</th>
+        <td>{{moviedb.movieDetails.title}}</td>
+      </tr>
+      <tr>
+        <th>Year</th>
+        <td>{{moviedb.movieDetails.year}}</td>
+      </tr>
+      <tr>
+        <th>Rating</th>
+        <td>{{moviedb.movieDetails.rating}}</td>
+      </tr>
+      <tr>
+        <th>Company</th>
+        <td>{{moviedb.movieDetails.company}}</td>
+      </tr>
+      <tr>
+        <th>Directors</th>
+        <td>
+          <ul>
+            <li ng-repeat="director in moviedb.movieDetails.directors">{{director}}</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <th>Actors</th>
+        <td>
+          <ul>
+            <li ng-repeat="actor in moviedb.movieDetails.actors">{{actor}}</li>
+          </ul>
+        </td>
+      </tr>
+    </table>
   </body>
 </html>

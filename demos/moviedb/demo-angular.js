@@ -16,16 +16,34 @@
  */
 
 
-var moviedbApp = angular.module('moviedbApp');
+var moviedbApp = angular.module('moviedbApp', []);
 
 
-moviedbApp.constroller('MoviedbController', function MoviedbController($scope) {
-  $scope
+moviedbApp.controller('MoviedbController', function MoviedbController($scope) {
+  var self = this;
+
+  startTime = Date.now();
+  main().then(function() {
+    selectAllMovies().then(function(movies) {
+      $scope.$apply(function() {
+        self.movies = movies;
+      });
+    });
+  });
+
+
+  this.selectMovie = function(movie) {
+    generateDetails(movie.id).then(function(movieDetails) {
+      $scope.$apply(function() {
+        self.movieDetails = movieDetails;
+      });
+    });
+  };
 });
 
 
 
-moviedbApp.service('', function() {
+moviedbApp.service('x', function() {
 
 });
 
@@ -52,15 +70,6 @@ var startTime;
 
 // =============================== rewrite =========================================
 
-// When the page loads.
-$(function() {
-  startTime = Date.now();
-  main().then(function() {
-    selectAllMovies();
-  });
-});
-
-
 function main() {
   return movie.db.getInstance(
       /* opt_onUpgrade */ undefined,
@@ -74,37 +83,13 @@ function main() {
 
 
 
-/**
- * Selects all movies.
- */
 function selectAllMovies() {
   var movie = db.getSchema().getMovie();
-  db.select(movie.id, movie.title, movie.year).
-      from(movie).exec().then(
-      function(results) {
-        var elapsed = Date.now() - startTime;
-        $('#load_time').text(elapsed.toString() + 'ms');
-        $('#master').empty();
-        $('#master').append(createTable(results, ['id', 'title', 'year']));
-        var grid = $('#master').
-            children([0]).
-            addClass('display compact cell-border').
-            dataTable();
-        grid.$('tr').click(function() {
-          var id = grid.fnGetData(this)[0];
-          startTime = Date.now();
-          generateDetails(id);
-        });
-      });
+  return db.select(movie.id, movie.title, movie.year).
+      from(movie).exec();
 }
+/*
 
-
-/**
- * Creates table.
- * @param {!Array.<!Object>} rows
- * @param {!Array.<string>} fields The fields to be displayed.
- * @return {string} The inner HTML created.
- */
 function createTable(rows, fields) {
   var content = '<table><thead><tr>';
   fields.forEach(function(title) {
@@ -122,9 +107,6 @@ function createTable(rows, fields) {
   return content;
 }
 
-/**
- * @param {!Object} details
- */
 function displayDetails(details) {
   var elapsed = Date.now() - startTime;
   var fields = ['title', 'year', 'rating', 'company', 'directors', 'actors'];
@@ -142,7 +124,7 @@ function displayDetails(details) {
   $('#slave').append('<p>Query time: ' + elapsed.toString() + ' ms</p>');
   $('#slave').append(content);
   $('#details_list').addClass('display compact cell-border').dataTable();
-}
+}*/
 
 
 
@@ -277,7 +259,7 @@ function generateDetails(id) {
             details['actors'] = rows.map(function(row) {
               return row['Actor']['lastName'] + ', ' +
                   row['Actor']['firstName'];
-            }).join('<br/>');
+            });
           }));
   promises.push(
       db.select().
@@ -288,10 +270,11 @@ function generateDetails(id) {
             details['directors'] = rows.map(function(row) {
               return row['Director']['lastName'] + ', ' +
                   row['Director']['firstName'];
-            }).join('<br/>');
+            });
           }));
-  Promise.all(promises).then(function() {
-    displayDetails(details);
+  
+  return Promise.all(promises).then(function() {
+    return details;
   });
 }
 
